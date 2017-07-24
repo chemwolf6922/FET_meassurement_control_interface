@@ -139,23 +139,28 @@ class control_panel(QMainWindow):
             self.statusBar().showMessage('Device not connected')
 
     def offset_n(self):
-        self.statusBar().showMessage('+0.1mm offset')
-        self.COM_send(b'\x05\x01')
+        if self.connected:
+            self.statusBar().showMessage('+0.1mm offset')
+            self.COM_send(b'\x05\x01')
 
     def offset_p(self):
-        self.statusBar().showMessage('-0.1mm offset')
-        self.COM_send(b'\x05\x02')
+        if self.connected:
+            self.statusBar().showMessage('-0.1mm offset')
+            self.COM_send(b'\x05\x02')
     
     def loadchip_event(self):
-        self.statusBar().showMessage('load chip')
-        self.current_channel = 0
-        self.bt2.setStyleSheet('background-color: #FFFFFF')
-        self.bt3.setStyleSheet('background-color: #FFFFFF')
-        self.bt4.setStyleSheet('background-color: #FFFFFF')
-        self.bt5.setStyleSheet('background-color: #FFFFFF')
-        self.bt10.setStyleSheet('background-color: #4CAF50')
-        self.COM_send(b'\x01\x05')
-        self.COM_send(b'\x04\x05')
+        if self.connected:
+            self.statusBar().showMessage('load chip')
+            self.current_channel = 0
+            self.bt2.setStyleSheet('background-color: #FFFFFF')
+            self.bt3.setStyleSheet('background-color: #FFFFFF')
+            self.bt4.setStyleSheet('background-color: #FFFFFF')
+            self.bt5.setStyleSheet('background-color: #FFFFFF')
+            self.bt10.setStyleSheet('background-color: #4CAF50')
+            self.COM_send(b'\x01\x05')
+            self.COM_send(b'\x04\x05')
+        else:
+            self.statusBar().showMessage('device not connected')
         
     def device_connect(self):
         if not self.connected:
@@ -194,108 +199,132 @@ class control_panel(QMainWindow):
 
 
     def change_to_CH1(self):
-        self.statusBar().showMessage('change to channel 1')
-        if self.current_channel == 1:
-            self.current_channel = 0
-            self.bt2.setStyleSheet('background-color: #FFFFFF')
-            self.COM_send(b'\x04\x05')
+        if self.connected:
+            self.statusBar().showMessage('change to channel 1')
+            if self.current_channel == 1:
+                self.current_channel = 0
+                self.bt2.setStyleSheet('background-color: #FFFFFF')
+                self.COM_send(b'\x04\x05')
+            else:
+                self.current_channel = 1
+                self.bt2.setStyleSheet('background-color: #4CAF50')
+                self.bt3.setStyleSheet('background-color: #FFFFFF')
+                self.bt4.setStyleSheet('background-color: #FFFFFF')
+                self.bt5.setStyleSheet('background-color: #FFFFFF')
+                self.bt10.setStyleSheet('background-color: #FFFFFF')
+                self.COM_send(b'\x01\x01')
+                self.COM_send(b'\x04\x01')
         else:
-            self.current_channel = 1
-            self.bt2.setStyleSheet('background-color: #4CAF50')
-            self.bt3.setStyleSheet('background-color: #FFFFFF')
-            self.bt4.setStyleSheet('background-color: #FFFFFF')
-            self.bt5.setStyleSheet('background-color: #FFFFFF')
-            self.bt10.setStyleSheet('background-color: #FFFFFF')
-            self.COM_send(b'\x01\x01')
-            self.COM_send(b'\x04\x01')
+            self.statusBar().showMessage('device not connected')
             
     def change_to_CH2(self):
-        self.statusBar().showMessage('change to channel 2')
-        if self.current_channel == 2:
-            self.current_channel = 0
-            self.bt3.setStyleSheet('background-color: #FFFFFF')
-            self.COM_send(b'\x04\x05')
+        if self.connected:
+            self.statusBar().showMessage('change to channel 2')
+            if self.current_channel == 2:
+                self.current_channel = 0
+                self.bt3.setStyleSheet('background-color: #FFFFFF')
+                self.COM_send(b'\x04\x05')
+            else:
+                self.current_channel = 2
+                self.bt2.setStyleSheet('background-color: #FFFFFF')
+                self.bt3.setStyleSheet('background-color: #4CAF50')
+                self.bt4.setStyleSheet('background-color: #FFFFFF')
+                self.bt5.setStyleSheet('background-color: #FFFFFF')
+                self.bt10.setStyleSheet('background-color: #FFFFFF')
+                self.COM_send(b'\x01\x02')
+                self.COM_send(b'\x04\x02')
         else:
-            self.current_channel = 2
-            self.bt2.setStyleSheet('background-color: #FFFFFF')
-            self.bt3.setStyleSheet('background-color: #4CAF50')
-            self.bt4.setStyleSheet('background-color: #FFFFFF')
-            self.bt5.setStyleSheet('background-color: #FFFFFF')
-            self.bt10.setStyleSheet('background-color: #FFFFFF')
-            self.COM_send(b'\x01\x02')
-            self.COM_send(b'\x04\x02')
+            self.statusBar().showMessage('device not connected')
 
     def change_to_CH3(self):
-        self.statusBar().showMessage('change to channel 3')
-        if self.current_channel == 3:
-            self.current_channel = 0
-            self.bt4.setStyleSheet('background-color: #FFFFFF')
-            self.COM_send(b'\x04\x05')
+        if self.connected:
+            self.statusBar().showMessage('change to channel 3')
+            if self.current_channel == 3:
+                self.current_channel = 0
+                self.bt4.setStyleSheet('background-color: #FFFFFF')
+                self.COM_send(b'\x04\x05')
+            else:
+                self.current_channel = 3
+                self.bt2.setStyleSheet('background-color: #FFFFFF')
+                self.bt3.setStyleSheet('background-color: #FFFFFF')
+                self.bt4.setStyleSheet('background-color: #4CAF50')
+                self.bt5.setStyleSheet('background-color: #FFFFFF')
+                self.bt10.setStyleSheet('background-color: #FFFFFF')
+                self.COM_send(b'\x01\x03')
+                self.COM_send(b'\x04\x03')
         else:
-            self.current_channel = 3
-            self.bt2.setStyleSheet('background-color: #FFFFFF')
-            self.bt3.setStyleSheet('background-color: #FFFFFF')
-            self.bt4.setStyleSheet('background-color: #4CAF50')
-            self.bt5.setStyleSheet('background-color: #FFFFFF')
-            self.bt10.setStyleSheet('background-color: #FFFFFF')
-            self.COM_send(b'\x01\x03')
-            self.COM_send(b'\x04\x03')
+            self.statusBar().showMessage('device not connected')
 
     def change_to_CH4(self):
-        self.statusBar().showMessage('change to channel 4')
-        if self.current_channel == 4:
-            self.current_channel = 0
-            self.bt5.setStyleSheet('background-color: #FFFFFF')
-            self.COM_send(b'\x04\x05')
+        if self.connected:
+            self.statusBar().showMessage('change to channel 4')
+            if self.current_channel == 4:
+                self.current_channel = 0
+                self.bt5.setStyleSheet('background-color: #FFFFFF')
+                self.COM_send(b'\x04\x05')
+            else:
+                self.current_channel = 4
+                self.bt2.setStyleSheet('background-color: #FFFFFF')
+                self.bt3.setStyleSheet('background-color: #FFFFFF')
+                self.bt4.setStyleSheet('background-color: #FFFFFF')
+                self.bt5.setStyleSheet('background-color: #4CAF50')
+                self.bt10.setStyleSheet('background-color: #FFFFFF')
+                self.COM_send(b'\x01\x04')
+                self.COM_send(b'\x04\x04')
         else:
-            self.current_channel = 4
+            self.statusBar().showMessage('device not connected')
+
+    def make_zero(self):
+        if self.connected:
+            self.statusBar().showMessage('make zero')
+            self.current_channel = 0
             self.bt2.setStyleSheet('background-color: #FFFFFF')
             self.bt3.setStyleSheet('background-color: #FFFFFF')
             self.bt4.setStyleSheet('background-color: #FFFFFF')
-            self.bt5.setStyleSheet('background-color: #4CAF50')
+            self.bt5.setStyleSheet('background-color: #FFFFFF')
             self.bt10.setStyleSheet('background-color: #FFFFFF')
-            self.COM_send(b'\x01\x04')
-            self.COM_send(b'\x04\x04')
-
-    def make_zero(self):
-        self.statusBar().showMessage('make zero')
-        self.current_channel = 0
-        self.bt2.setStyleSheet('background-color: #FFFFFF')
-        self.bt3.setStyleSheet('background-color: #FFFFFF')
-        self.bt4.setStyleSheet('background-color: #FFFFFF')
-        self.bt5.setStyleSheet('background-color: #FFFFFF')
-        self.bt10.setStyleSheet('background-color: #FFFFFF')
-        self.COM_send(b'\x03')
+            self.COM_send(b'\x03')
+        else:
+            self.statusBar().showMessage('device not connected')
 
     def Lens1_event(self):
-        self.statusBar().showMessage('lens 1 event')
-        if self.lens1_status:
-            self.lens1_status = False
-            self.bt6.setStyleSheet('background-color: #FFFFFF')
+        if self.connected:
+            self.statusBar().showMessage('lens 1 event')
+            if self.lens1_status:
+                self.lens1_status = False
+                self.bt6.setStyleSheet('background-color: #FFFFFF')
+            else:
+                self.lens1_status = True
+                self.bt6.setStyleSheet('background-color: #4CAF50')
+            self.Lens_control()
         else:
-            self.lens1_status = True
-            self.bt6.setStyleSheet('background-color: #4CAF50')
-        self.Lens_control()
+            self.statusBar().showMessage('device not connected')
 
     def Lens2_event(self):
-        self.statusBar().showMessage('lens 2 event')
-        if self.lens2_status:
-            self.lens2_status = False
-            self.bt7.setStyleSheet('background-color: #FFFFFF')
+        if self.connected:
+            self.statusBar().showMessage('lens 2 event')
+            if self.lens2_status:
+                self.lens2_status = False
+                self.bt7.setStyleSheet('background-color: #FFFFFF')
+            else:
+                self.lens2_status = True
+                self.bt7.setStyleSheet('background-color: #4CAF50')
+            self.Lens_control()
         else:
-            self.lens2_status = True
-            self.bt7.setStyleSheet('background-color: #4CAF50')
-        self.Lens_control()
+            self.statusBar().showMessage('device not connected')
 
     def Lens3_event(self):
-        self.statusBar().showMessage('lens 3 event')
-        if self.lens3_status:
-            self.lens3_status = False
-            self.bt8.setStyleSheet('background-color: #FFFFFF')
+        if self.connected:
+            self.statusBar().showMessage('lens 3 event')
+            if self.lens3_status:
+                self.lens3_status = False
+                self.bt8.setStyleSheet('background-color: #FFFFFF')
+            else:
+                self.lens3_status = True
+                self.bt8.setStyleSheet('background-color: #4CAF50')
+            self.Lens_control()
         else:
-            self.lens3_status = True
-            self.bt8.setStyleSheet('background-color: #4CAF50')
-        self.Lens_control()
+            self.statusBar().showMessage('device not connected')
     
     def Lens_control(self):
         command = 0

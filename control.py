@@ -15,6 +15,7 @@ class control_panel(QMainWindow):
         self.current_channel = 0
         self.initUI()
         self.connected = False
+        self.power_status = True
 
     def initUI(self):
         self.bt0 = QPushButton('Make Zero',self)
@@ -77,6 +78,10 @@ class control_panel(QMainWindow):
         self.bt_offset2.setStyleSheet('background-color: #FFFFFF')
         self.bt_offset2.setFont(self.Font)
 
+        self.bt_power = QPushButton('power',self)
+        self.bt_power.clicked.connect(self.power_on_off)
+        self.bt_power.setStyleSheet('background-color: #FFFFFF')
+        self.bt_power.setFont(self.Font)
 
         vbox1 = QVBoxLayout()
         vbox1.addWidget(self.bt2)
@@ -87,6 +92,7 @@ class control_panel(QMainWindow):
 
         vbox2 = QVBoxLayout()
         vbox2.addWidget(self.bt9)
+        vbox2.addWidget(self.bt_power)
         vbox2.addWidget(self.bt0)
         vbox2.addWidget(self.bt6)
         vbox2.addWidget(self.bt7)
@@ -116,6 +122,21 @@ class control_panel(QMainWindow):
         self.setWindowTitle('Control Panel')
         self.setStyleSheet('background-color: #CCCCCC')
         self.show()
+    
+    def power_on_off(self):
+        if self.connected:
+            if self.power_status:
+                self.COM_Port.write(b'\x06\x02')
+                self.power_status = bool(int(self.COM_Port.read(1)[0]))
+            else:
+                self.COM_Port.write(b'\x06\x01')
+                self.power_status = bool(int(self.COM_Port.read(1)[0]))
+            if self.power_status:
+                self.bt_power.setStyleSheet('background-color: #4CAF50')
+            else:
+                self.bt_power.setStyleSheet('background-color: #b71c1c')
+        else:
+            self.statusBar().showMessage('Device not connected')
 
     def offset_n(self):
         self.statusBar().showMessage('+0.1mm offset')
@@ -148,16 +169,28 @@ class control_panel(QMainWindow):
                 self.connected = True
                 self.statusBar().showMessage('Device connected')
                 self.bt9.setStyleSheet('background-color: #4CAF50')
+                time.sleep(0.1)
+                self.COM_Port.write(b'\x06\x03')
+                self.power_status = bool(int(self.COM_Port.read(1)[0]))
+                if self.power_status:
+                    self.bt_power.setStyleSheet('background-color: #4CAF50')
+                else:
+                    self.bt_power.setStyleSheet('background-color: #b71c1c')
             else:
                 self.statusBar().showMessage('Device not found')
 
+
     def COM_send(self,command):
-        if self.connected:
+        if self.connected and self.power_status:
             self.COM_Port.write(command)
             self.COM_Port.flush()
             time.sleep(0.01)                    
-        else:
+        elif not self.connected:
             self.statusBar().showMessage('Device not connected')
+        elif not self.power_status:
+            self.statusBar().showMessage('Power is off')
+        else:
+            pass
 
 
     def change_to_CH1(self):

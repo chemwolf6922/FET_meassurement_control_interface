@@ -23,8 +23,8 @@ class test(QWidget):
         self.bt1.setStyleSheet('background-color: #666666; border: none')
         print('haha')
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    w = test()
-    sys.exit(app.exec_())
+
+app = QApplication(sys.argv)
+w = test()
+sys.exit(app.exec_())
 

@@ -2,8 +2,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont
 import sys
 import serial
+import serial.tools.list_ports
+import time
 
-class control_panel(QWidget):
+class control_panel(QMainWindow):
     def __init__(self):
         super().__init__()
         self.Font = QFont('Roboto',16,QFont.Normal)
@@ -12,6 +14,7 @@ class control_panel(QWidget):
         self.lens3_status = False
         self.current_channel = 0
         self.initUI()
+        self.connected = False
 
     def initUI(self):
         self.bt0 = QPushButton('Make Zero',self)
@@ -54,114 +57,223 @@ class control_panel(QWidget):
         self.bt8.setStyleSheet('background-color: #FFFFFF')
         self.bt8.setFont(self.Font)
 
+        self.bt9 = QPushButton('Connect',self)
+        self.bt9.clicked.connect(self.device_connect)
+        self.bt9.setStyleSheet('background-color: #FFFFFF')
+        self.bt9.setFont(self.Font)
+
+        self.bt10 = QPushButton('Load Chip',self)
+        self.bt10.clicked.connect(self.loadchip_event)
+        self.bt10.setStyleSheet('background-color: #FFFFFF')
+        self.bt10.setFont(self.Font)
+
+        self.bt_offset1 = QPushButton('+0.1',self)
+        self.bt_offset1.clicked.connect(self.offset_p)
+        self.bt_offset1.setStyleSheet('background-color: #FFFFFF')
+        self.bt_offset1.setFont(self.Font)
+
+        self.bt_offset2 = QPushButton('-0.1',self)
+        self.bt_offset2.clicked.connect(self.offset_n)
+        self.bt_offset2.setStyleSheet('background-color: #FFFFFF')
+        self.bt_offset2.setFont(self.Font)
+
+
         vbox1 = QVBoxLayout()
         vbox1.addWidget(self.bt2)
         vbox1.addWidget(self.bt3)
         vbox1.addWidget(self.bt4)
         vbox1.addWidget(self.bt5)
+        vbox1.addWidget(self.bt10)
 
         vbox2 = QVBoxLayout()
+        vbox2.addWidget(self.bt9)
         vbox2.addWidget(self.bt0)
         vbox2.addWidget(self.bt6)
         vbox2.addWidget(self.bt7)
         vbox2.addWidget(self.bt8)
 
-        hbox = QHBoxLayout()
-        hbox.addLayout(vbox1)
-        hbox.addLayout(vbox2)
+        hbox1 = QHBoxLayout()
+        hbox1.addLayout(vbox1)
+        hbox1.addLayout(vbox2)
 
-        self.setLayout(hbox)
-        self.setGeometry(300,300,300,400)
+        hbox2 = QHBoxLayout()
+        hbox2.addWidget(self.bt_offset1)
+        hbox2.addWidget(self.bt_offset2)
+
+        vbox3 = QVBoxLayout()
+        vbox3.addLayout(hbox1)
+        vbox3.addLayout(hbox2)
+        
+
+        frame = QWidget()
+        frame.setLayout(vbox3)
+
+        self.setCentralWidget(frame)
+        self.setGeometry(300,300,400,300)
+
+        self.statusBar()
+
         self.setWindowTitle('Control Panel')
         self.setStyleSheet('background-color: #CCCCCC')
         self.show()
 
-    def connect_device(self):
-        print('connect device')
+    def offset_n(self):
+        self.statusBar().showMessage('+0.1mm offset')
+        self.COM_send(b'\x05\x01')
+
+    def offset_p(self):
+        self.statusBar().showMessage('-0.1mm offset')
+        self.COM_send(b'\x05\x02')
+    
+    def loadchip_event(self):
+        self.statusBar().showMessage('load chip')
+        self.current_channel = 0
+        self.bt2.setStyleSheet('background-color: #FFFFFF')
+        self.bt3.setStyleSheet('background-color: #FFFFFF')
+        self.bt4.setStyleSheet('background-color: #FFFFFF')
+        self.bt5.setStyleSheet('background-color: #FFFFFF')
+        self.bt10.setStyleSheet('background-color: #4CAF50')
+        self.COM_send(b'\x01\x05')
+        self.COM_send(b'\x04\x05')
+        
+    def device_connect(self):
+        if not self.connected:
+            ports = serial.tools.list_ports.comports()
+            tempstr = ''
+            for port in ports:
+                if str(port).find('STMicroelectronics Virtual COM Port') != -1:
+                    tempstr = str(port.device)
+            if tempstr != '':
+                self.COM_Port = serial.Serial(tempstr,115200)
+                self.connected = True
+                self.statusBar().showMessage('Device connected')
+                self.bt9.setStyleSheet('background-color: #4CAF50')
+            else:
+                self.statusBar().showMessage('Device not found')
+
+    def COM_send(self,command):
+        if self.connected:
+            self.COM_Port.write(command)
+            self.COM_Port.flush()
+            time.sleep(0.01)                    
+        else:
+            self.statusBar().showMessage('Device not connected')
+
 
     def change_to_CH1(self):
-        print('change to channel 1')
+        self.statusBar().showMessage('change to channel 1')
         if self.current_channel == 1:
             self.current_channel = 0
             self.bt2.setStyleSheet('background-color: #FFFFFF')
+            self.COM_send(b'\x04\x05')
         else:
             self.current_channel = 1
             self.bt2.setStyleSheet('background-color: #4CAF50')
             self.bt3.setStyleSheet('background-color: #FFFFFF')
             self.bt4.setStyleSheet('background-color: #FFFFFF')
             self.bt5.setStyleSheet('background-color: #FFFFFF')
+            self.bt10.setStyleSheet('background-color: #FFFFFF')
+            self.COM_send(b'\x01\x01')
+            self.COM_send(b'\x04\x01')
             
     def change_to_CH2(self):
-        print('change to channel 2')
+        self.statusBar().showMessage('change to channel 2')
         if self.current_channel == 2:
             self.current_channel = 0
             self.bt3.setStyleSheet('background-color: #FFFFFF')
+            self.COM_send(b'\x04\x05')
         else:
             self.current_channel = 2
             self.bt2.setStyleSheet('background-color: #FFFFFF')
             self.bt3.setStyleSheet('background-color: #4CAF50')
             self.bt4.setStyleSheet('background-color: #FFFFFF')
             self.bt5.setStyleSheet('background-color: #FFFFFF')
+            self.bt10.setStyleSheet('background-color: #FFFFFF')
+            self.COM_send(b'\x01\x02')
+            self.COM_send(b'\x04\x02')
 
     def change_to_CH3(self):
-        print('change to channel 3')
+        self.statusBar().showMessage('change to channel 3')
         if self.current_channel == 3:
             self.current_channel = 0
             self.bt4.setStyleSheet('background-color: #FFFFFF')
+            self.COM_send(b'\x04\x05')
         else:
             self.current_channel = 3
             self.bt2.setStyleSheet('background-color: #FFFFFF')
             self.bt3.setStyleSheet('background-color: #FFFFFF')
             self.bt4.setStyleSheet('background-color: #4CAF50')
             self.bt5.setStyleSheet('background-color: #FFFFFF')
+            self.bt10.setStyleSheet('background-color: #FFFFFF')
+            self.COM_send(b'\x01\x03')
+            self.COM_send(b'\x04\x03')
 
     def change_to_CH4(self):
-        print('change to channel 4')
+        self.statusBar().showMessage('change to channel 4')
         if self.current_channel == 4:
             self.current_channel = 0
             self.bt5.setStyleSheet('background-color: #FFFFFF')
+            self.COM_send(b'\x04\x05')
         else:
             self.current_channel = 4
             self.bt2.setStyleSheet('background-color: #FFFFFF')
             self.bt3.setStyleSheet('background-color: #FFFFFF')
             self.bt4.setStyleSheet('background-color: #FFFFFF')
             self.bt5.setStyleSheet('background-color: #4CAF50')
+            self.bt10.setStyleSheet('background-color: #FFFFFF')
+            self.COM_send(b'\x01\x04')
+            self.COM_send(b'\x04\x04')
 
     def make_zero(self):
-        print('make zero')
+        self.statusBar().showMessage('make zero')
         self.current_channel = 0
         self.bt2.setStyleSheet('background-color: #FFFFFF')
         self.bt3.setStyleSheet('background-color: #FFFFFF')
         self.bt4.setStyleSheet('background-color: #FFFFFF')
         self.bt5.setStyleSheet('background-color: #FFFFFF')
+        self.bt10.setStyleSheet('background-color: #FFFFFF')
+        self.COM_send(b'\x03')
 
     def Lens1_event(self):
-        print('lens 1 event')
+        self.statusBar().showMessage('lens 1 event')
         if self.lens1_status:
             self.lens1_status = False
             self.bt6.setStyleSheet('background-color: #FFFFFF')
         else:
             self.lens1_status = True
             self.bt6.setStyleSheet('background-color: #4CAF50')
+        self.Lens_control()
 
     def Lens2_event(self):
-        print('lens 2 event')
+        self.statusBar().showMessage('lens 2 event')
         if self.lens2_status:
             self.lens2_status = False
             self.bt7.setStyleSheet('background-color: #FFFFFF')
         else:
             self.lens2_status = True
             self.bt7.setStyleSheet('background-color: #4CAF50')
+        self.Lens_control()
 
     def Lens3_event(self):
-        print('lens 3 event')
+        self.statusBar().showMessage('lens 3 event')
         if self.lens3_status:
             self.lens3_status = False
             self.bt8.setStyleSheet('background-color: #FFFFFF')
         else:
             self.lens3_status = True
             self.bt8.setStyleSheet('background-color: #4CAF50')
+        self.Lens_control()
     
+    def Lens_control(self):
+        command = 0
+        if self.lens1_status:
+            command += 1
+        if self.lens2_status:
+            command += 2
+        if self.lens3_status:
+            command += 4
+        self.COM_send(b'\x02'+bytes([command]))
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     cp = control_panel()

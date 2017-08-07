@@ -1,9 +1,49 @@
+'''
+FET test platform control GUI
+Copyright (c) 2017. Feng Wang. All rights reserved.
+Email: wang-14@mails.tsinghua.edu.cn
+'''
+
+'''
+Communication protocol
+
+Position control
+Sensor 1      0x01 0x01
+Sensor 2      0x01 0x02
+Sensor 3      0x01 0x03
+Sensor 4      0x01 0x04
+load chip     0x01 0x05
+
+Filter control (last three bits of the second byte)
+0x02 0b00000 filter3 filter2 filter1
+
+Make zero
+0x03
+
+Drain selection
+Drain 1      0x04 0x01
+Drain 2      0x04 0x02
+Drain 3      0x04 0x03
+Drain 4      0x04 0x04
+
+System offset
++0.1mm       0x05 0x01
+-0.1mm       0x05 0x02
+
+Power control (for low noise power off opration)
+Power on      0x06 0x01    will return power status(power is on:0x01 power is off:0x00)
+Power off     0x06 0x02    will return power status
+Power status  0x06 0x03    will return power status
+'''
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont
 import sys
 import serial
 import serial.tools.list_ports
 import time
+
+
 
 class control_panel(QMainWindow):
     def __init__(self):
@@ -43,17 +83,17 @@ class control_panel(QMainWindow):
         self.bt5.setStyleSheet('background-color: #FFFFFF')
         self.bt5.setFont(self.Font)
         
-        self.bt6 = QPushButton('Lens 1',self)
+        self.bt6 = QPushButton('Filter 1',self)
         self.bt6.clicked.connect(self.Lens1_event)
         self.bt6.setStyleSheet('background-color: #FFFFFF')
         self.bt6.setFont(self.Font)
 
-        self.bt7 = QPushButton('Lens 2',self)
+        self.bt7 = QPushButton('Filter 2',self)
         self.bt7.clicked.connect(self.Lens2_event)
         self.bt7.setStyleSheet('background-color: #FFFFFF')
         self.bt7.setFont(self.Font)
 
-        self.bt8 = QPushButton('Lens 3',self)
+        self.bt8 = QPushButton('Filter 3',self)
         self.bt8.clicked.connect(self.Lens3_event)
         self.bt8.setStyleSheet('background-color: #FFFFFF')
         self.bt8.setFont(self.Font)
@@ -68,12 +108,12 @@ class control_panel(QMainWindow):
         self.bt10.setStyleSheet('background-color: #FFFFFF')
         self.bt10.setFont(self.Font)
 
-        self.bt_offset1 = QPushButton('+0.1',self)
+        self.bt_offset1 = QPushButton('+0.1mm',self)
         self.bt_offset1.clicked.connect(self.offset_p)
         self.bt_offset1.setStyleSheet('background-color: #FFFFFF')
         self.bt_offset1.setFont(self.Font)
 
-        self.bt_offset2 = QPushButton('-0.1',self)
+        self.bt_offset2 = QPushButton('-0.1mm',self)
         self.bt_offset2.clicked.connect(self.offset_n)
         self.bt_offset2.setStyleSheet('background-color: #FFFFFF')
         self.bt_offset2.setFont(self.Font)
@@ -139,17 +179,17 @@ class control_panel(QMainWindow):
             self.statusBar().showMessage('Device not connected')
 
     def offset_n(self):
-        if self.connected:
-            self.statusBar().showMessage('+0.1mm offset')
+        if self.connected and self.power_status:
+            self.statusBar().showMessage('-0.1mm offset')
             self.COM_send(b'\x05\x01')
 
     def offset_p(self):
-        if self.connected:
-            self.statusBar().showMessage('-0.1mm offset')
+        if self.connected and self.power_status:
+            self.statusBar().showMessage('+0.1mm offset')
             self.COM_send(b'\x05\x02')
     
     def loadchip_event(self):
-        if self.connected:
+        if self.connected and self.power_status:
             self.statusBar().showMessage('load chip')
             self.current_channel = 0
             self.bt2.setStyleSheet('background-color: #FFFFFF')
@@ -175,7 +215,7 @@ class control_panel(QMainWindow):
                 self.statusBar().showMessage('Device connected')
                 self.bt9.setStyleSheet('background-color: #4CAF50')
                 time.sleep(0.1)
-                self.COM_Port.write(b'\x06\x03')
+                self.COM_Port.write(b'\x06\x01')
                 self.power_status = bool(int(self.COM_Port.read(1)[0]))
                 if self.power_status:
                     self.bt_power.setStyleSheet('background-color: #4CAF50')
@@ -199,7 +239,7 @@ class control_panel(QMainWindow):
 
 
     def change_to_CH1(self):
-        if self.connected:
+        if self.connected and self.power_status:
             self.statusBar().showMessage('change to channel 1')
             if self.current_channel == 1:
                 self.current_channel = 0
@@ -218,7 +258,7 @@ class control_panel(QMainWindow):
             self.statusBar().showMessage('device not connected')
             
     def change_to_CH2(self):
-        if self.connected:
+        if self.connected and self.power_status:
             self.statusBar().showMessage('change to channel 2')
             if self.current_channel == 2:
                 self.current_channel = 0
@@ -237,7 +277,7 @@ class control_panel(QMainWindow):
             self.statusBar().showMessage('device not connected')
 
     def change_to_CH3(self):
-        if self.connected:
+        if self.connected and self.power_status:
             self.statusBar().showMessage('change to channel 3')
             if self.current_channel == 3:
                 self.current_channel = 0
@@ -256,7 +296,7 @@ class control_panel(QMainWindow):
             self.statusBar().showMessage('device not connected')
 
     def change_to_CH4(self):
-        if self.connected:
+        if self.connected and self.power_status:
             self.statusBar().showMessage('change to channel 4')
             if self.current_channel == 4:
                 self.current_channel = 0
@@ -275,7 +315,7 @@ class control_panel(QMainWindow):
             self.statusBar().showMessage('device not connected')
 
     def make_zero(self):
-        if self.connected:
+        if self.connected and self.power_status:
             self.statusBar().showMessage('make zero')
             self.current_channel = 0
             self.bt2.setStyleSheet('background-color: #FFFFFF')
@@ -288,7 +328,7 @@ class control_panel(QMainWindow):
             self.statusBar().showMessage('device not connected')
 
     def Lens1_event(self):
-        if self.connected:
+        if self.connected and self.power_status:
             self.statusBar().showMessage('lens 1 event')
             if self.lens1_status:
                 self.lens1_status = False
@@ -301,7 +341,7 @@ class control_panel(QMainWindow):
             self.statusBar().showMessage('device not connected')
 
     def Lens2_event(self):
-        if self.connected:
+        if self.connected and self.power_status:
             self.statusBar().showMessage('lens 2 event')
             if self.lens2_status:
                 self.lens2_status = False
@@ -314,7 +354,7 @@ class control_panel(QMainWindow):
             self.statusBar().showMessage('device not connected')
 
     def Lens3_event(self):
-        if self.connected:
+        if self.connected and self.power_status:
             self.statusBar().showMessage('lens 3 event')
             if self.lens3_status:
                 self.lens3_status = False

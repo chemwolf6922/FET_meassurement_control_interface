@@ -36,19 +36,19 @@ Power off     0x06 0x02    will return power status
 Power status  0x06 0x03    will return power status
 '''
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QFont
 import sys
-import serial
-import serial.tools.list_ports
 import time
 
+import serial
+import serial.tools.list_ports
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import *
 
 
 class control_panel(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.Font = QFont('Roboto',16,QFont.Normal)
+        self.Font = QFont('Roboto', 16, QFont.Normal)
         self.lens1_status = False
         self.lens2_status = False
         self.lens3_status = False
@@ -58,67 +58,67 @@ class control_panel(QMainWindow):
         self.power_status = True
 
     def initUI(self):
-        self.bt0 = QPushButton('Make Zero',self)
+        self.bt0 = QPushButton('Make Zero', self)
         self.bt0.clicked.connect(self.make_zero)
         self.bt0.setStyleSheet('background-color: #FFFFFF')
         self.bt0.setFont(self.Font)
 
-        self.bt2 = QPushButton('Channel 1',self)
+        self.bt2 = QPushButton('Channel 1', self)
         self.bt2.clicked.connect(self.change_to_CH1)
         self.bt2.setStyleSheet('background-color: #FFFFFF')
         self.bt2.setFont(self.Font)
 
-        self.bt3 = QPushButton('Channel 2',self)
+        self.bt3 = QPushButton('Channel 2', self)
         self.bt3.clicked.connect(self.change_to_CH2)
         self.bt3.setStyleSheet('background-color: #FFFFFF')
         self.bt3.setFont(self.Font)
 
-        self.bt4 = QPushButton('Channel 3',self)
+        self.bt4 = QPushButton('Channel 3', self)
         self.bt4.clicked.connect(self.change_to_CH3)
         self.bt4.setStyleSheet('background-color: #FFFFFF')
         self.bt4.setFont(self.Font)
 
-        self.bt5 = QPushButton('Channel 4',self)
+        self.bt5 = QPushButton('Channel 4', self)
         self.bt5.clicked.connect(self.change_to_CH4)
         self.bt5.setStyleSheet('background-color: #FFFFFF')
         self.bt5.setFont(self.Font)
-        
-        self.bt6 = QPushButton('Filter 1',self)
+
+        self.bt6 = QPushButton('Filter 1', self)
         self.bt6.clicked.connect(self.Lens1_event)
         self.bt6.setStyleSheet('background-color: #FFFFFF')
         self.bt6.setFont(self.Font)
 
-        self.bt7 = QPushButton('Filter 2',self)
+        self.bt7 = QPushButton('Filter 2', self)
         self.bt7.clicked.connect(self.Lens2_event)
         self.bt7.setStyleSheet('background-color: #FFFFFF')
         self.bt7.setFont(self.Font)
 
-        self.bt8 = QPushButton('Filter 3',self)
+        self.bt8 = QPushButton('Filter 3', self)
         self.bt8.clicked.connect(self.Lens3_event)
         self.bt8.setStyleSheet('background-color: #FFFFFF')
         self.bt8.setFont(self.Font)
 
-        self.bt9 = QPushButton('Connect',self)
+        self.bt9 = QPushButton('Connect', self)
         self.bt9.clicked.connect(self.device_connect)
         self.bt9.setStyleSheet('background-color: #FFFFFF')
         self.bt9.setFont(self.Font)
 
-        self.bt10 = QPushButton('Load Chip',self)
+        self.bt10 = QPushButton('Load Chip', self)
         self.bt10.clicked.connect(self.loadchip_event)
         self.bt10.setStyleSheet('background-color: #FFFFFF')
         self.bt10.setFont(self.Font)
 
-        self.bt_offset1 = QPushButton('+0.1mm',self)
+        self.bt_offset1 = QPushButton('+0.1mm', self)
         self.bt_offset1.clicked.connect(self.offset_p)
         self.bt_offset1.setStyleSheet('background-color: #FFFFFF')
         self.bt_offset1.setFont(self.Font)
 
-        self.bt_offset2 = QPushButton('-0.1mm',self)
+        self.bt_offset2 = QPushButton('-0.1mm', self)
         self.bt_offset2.clicked.connect(self.offset_n)
         self.bt_offset2.setStyleSheet('background-color: #FFFFFF')
         self.bt_offset2.setFont(self.Font)
 
-        self.bt_power = QPushButton('power',self)
+        self.bt_power = QPushButton('power', self)
         self.bt_power.clicked.connect(self.power_on_off)
         self.bt_power.setStyleSheet('background-color: #FFFFFF')
         self.bt_power.setFont(self.Font)
@@ -149,20 +149,19 @@ class control_panel(QMainWindow):
         vbox3 = QVBoxLayout()
         vbox3.addLayout(hbox1)
         vbox3.addLayout(hbox2)
-        
 
         frame = QWidget()
         frame.setLayout(vbox3)
 
         self.setCentralWidget(frame)
-        self.setGeometry(300,300,400,300)
+        self.setGeometry(300, 300, 400, 300)
 
         self.statusBar()
 
         self.setWindowTitle('Control Panel')
         self.setStyleSheet('background-color: #CCCCCC')
         self.show()
-    
+
     def power_on_off(self):
         if self.connected:
             if self.power_status:
@@ -187,7 +186,7 @@ class control_panel(QMainWindow):
         if self.connected and self.power_status:
             self.statusBar().showMessage('+0.1mm offset')
             self.COM_send(b'\x05\x02')
-    
+
     def loadchip_event(self):
         if self.connected and self.power_status:
             self.statusBar().showMessage('load chip')
@@ -201,7 +200,7 @@ class control_panel(QMainWindow):
             self.COM_send(b'\x04\x05')
         else:
             self.statusBar().showMessage('device not connected')
-        
+
     def device_connect(self):
         if not self.connected:
             ports = serial.tools.list_ports.comports()
@@ -210,7 +209,7 @@ class control_panel(QMainWindow):
                 if str(port).find('STMicroelectronics Virtual COM Port') != -1:
                     tempstr = str(port.device)
             if tempstr != '':
-                self.COM_Port = serial.Serial(tempstr,115200)
+                self.COM_Port = serial.Serial(tempstr, 115200)
                 self.connected = True
                 self.statusBar().showMessage('Device connected')
                 self.bt9.setStyleSheet('background-color: #4CAF50')
@@ -224,19 +223,17 @@ class control_panel(QMainWindow):
             else:
                 self.statusBar().showMessage('Device not found')
 
-
-    def COM_send(self,command):
+    def COM_send(self, command):
         if self.connected and self.power_status:
             self.COM_Port.write(command)
             self.COM_Port.flush()
-            time.sleep(0.01)                    
+            time.sleep(0.01)
         elif not self.connected:
             self.statusBar().showMessage('Device not connected')
         elif not self.power_status:
             self.statusBar().showMessage('Power is off')
         else:
             pass
-
 
     def change_to_CH1(self):
         if self.connected and self.power_status:
@@ -256,7 +253,7 @@ class control_panel(QMainWindow):
                 self.COM_send(b'\x04\x01')
         else:
             self.statusBar().showMessage('device not connected')
-            
+
     def change_to_CH2(self):
         if self.connected and self.power_status:
             self.statusBar().showMessage('change to channel 2')
@@ -365,7 +362,7 @@ class control_panel(QMainWindow):
             self.Lens_control()
         else:
             self.statusBar().showMessage('device not connected')
-    
+
     def Lens_control(self):
         command = 0
         if self.lens1_status:
@@ -375,6 +372,7 @@ class control_panel(QMainWindow):
         if self.lens3_status:
             command += 4
         self.COM_send(b'\x02'+bytes([command]))
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
